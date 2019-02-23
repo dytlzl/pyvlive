@@ -14,9 +14,11 @@ class channel():
     MAX_NUM_LIST = 100
 
 
-    def __init__(self, channel_seq):
+    def __init__(self, channel_seq, limit=1000, allow_other_channel=True):
         self.channel_seq = channel_seq
         self.video_list = []
+        self.limit = limit
+        self.allow_other_channel = allow_other_channel
         self.page = 1
         self.index = 0
         self.configure_video_list()
@@ -49,15 +51,19 @@ class channel():
 
     def configure_video_list(self):
         data = self.fetch_video_list()['result']
-        for i in data['videoList']:
-            content = {
-                'video_seq': str(i['videoSeq']),
-                'title': i['title'],
-                'time': i['onAirStartAt']
-            }
-            self.video_list.append(content)
-        total = data['totalVideoCount']
-        if total-(self.page)*100 > 0:
+        try:
+            for i in data['videoList']:
+                video_data = {
+                    'video_seq': str(i['videoSeq']),
+                    'title': i['title'],
+                    'channel': i['representChannelName'],
+                    'time': i['onAirStartAt']
+                }
+                if self.allow_other_channel or data['channelInfo']['channelName'] == i['representChannelName']:
+                    self.video_list.append(video_data)
+        except KeyError:
+            return
+        if len(self.video_list) < self.limit:
             self.page += 1
             self.configure_video_list()
 
