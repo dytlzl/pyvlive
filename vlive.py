@@ -14,11 +14,13 @@ class channel():
     MAX_NUM_LIST = 100
 
 
-    def __init__(self, channel_seq, limit=1000, allow_other_channel=True):
+    def __init__(self, channel_seq, limit=1000, allow_other_channel=True, allow_mini_replay=True):
         self.channel_seq = channel_seq
+        self.channel_name = ''
         self.video_list = []
         self.limit = limit
         self.allow_other_channel = allow_other_channel
+        self.allow_mini_replay = allow_mini_replay
         self.page = 1
         self.index = 0
         self.configure_video_list()
@@ -29,6 +31,7 @@ class channel():
 
 
     def __next__(self):
+        self.filter_video_data()
         if self.index >= len(self.video_list):
             raise StopIteration
         self.set_timestamp()
@@ -51,6 +54,7 @@ class channel():
 
     def configure_video_list(self):
         data = self.fetch_video_list()['result']
+        self.channel_name = data['channelInfo']['channelName']
         try:
             for i in data['videoList']:
                 video_data = {
@@ -59,13 +63,23 @@ class channel():
                     'channel': i['representChannelName'],
                     'time': i['onAirStartAt']
                 }
-                if self.allow_other_channel or data['channelInfo']['channelName'] == i['representChannelName']:
-                    self.video_list.append(video_data)
+                self.video_list.append(video_data)
         except KeyError:
             return
         if len(self.video_list) < self.limit:
             self.page += 1
             self.configure_video_list()
+    
+
+    def filter_video_data(self):
+        try:
+            if (self.allow_other_channel or self.channel_name == self.video_list[self.index]['channel']) and (self.allow_mini_replay or not '[CH+ mini replay]' in self.video_list[self.index]['title']):
+                return
+            else:
+                self.index += 1
+                self.filter_video_data()
+        except IndexError:
+            return
 
 
     def set_timestamp(self):
