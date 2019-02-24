@@ -34,7 +34,7 @@ class channel():
         self.filter_video_data()
         if self.index >= len(self.video_list):
             raise StopIteration
-        self.set_timestamp()
+        self.configure_timestamp()
         content = self.video_list[self.index]
         self.index += 1
         return content
@@ -82,7 +82,7 @@ class channel():
             return
 
 
-    def set_timestamp(self):
+    def configure_timestamp(self):
         self.video_list[self.index]['timestamp'] = generate_timestamp(self.video_list[self.index]['time'])
 
 
