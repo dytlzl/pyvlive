@@ -31,14 +31,15 @@ class channel():
 
 
     def __next__(self):
-        self.filter_video_data()
-        if self.index < self.limit and (self.index < len(self.video_list) or self.configure_video_list()):
-            self.configure_timestamp()
-            content = self.video_list[self.index]
-            self.index += 1
-            return content
-        else:
-            raise StopIteration
+        while True:
+            if self.can_stop_iteration():
+                raise StopIteration
+            if self.filter_video_data():
+                break
+        self.configure_timestamp()
+        content = self.video_list[self.index]
+        self.index += 1
+        return content
 
 
     def fetch_video_list(self):
@@ -73,16 +74,31 @@ class channel():
 
     def filter_video_data(self):
         try:
-            if (self.allow_other_channel or self.channel_name == self.video_list[self.index]['channel_name']
-                ) and (self.allow_mini_replay or not '[CH+ mini replay]' in self.video_list[self.index]['title']
-                ) and (self.search_word == '' or self.search_word in self.video_list[self.index]['title']):
-                return
-            else:
-                self.index += 1
-                self.limit += 1
-                self.filter_video_data()
+            if (self.search_word == '' or self.search_word in self.video_list[self.index]['title']
+            ) and (self.allow_mini_replay or not '[CH+ mini replay]' in self.video_list[self.index]['title']
+            ) and (self.allow_other_channel or self.channel_name == self.video_list[self.index]['channel_name']):
+                return True
         except IndexError:
-            return
+            return False
+        self.index += 1
+        self.limit += 1
+        self.filter_video_data()
+
+
+    def can_stop_iteration(self):
+        if self.has_reached_limit():
+            return True
+        if self.index < len(self.video_list):
+            return False
+        else:
+            return not self.configure_video_list()
+
+
+    def has_reached_limit(self):
+        if not self.index < self.limit:
+            return True
+        else:
+            return False
 
 
     def configure_timestamp(self):
