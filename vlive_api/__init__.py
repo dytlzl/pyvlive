@@ -1,2 +1,2 @@
-from .vlive import channel
-from .vlive import embed_code
+from .channel import channel
+from .embed import embed
