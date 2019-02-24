@@ -1,5 +1,5 @@
 import requests
-import datetime
+from . import timestamp
 
 
 class channel():
@@ -102,10 +102,4 @@ class channel():
 
 
     def configure_timestamp(self):
-        self.video_list[self.index]['timestamp'] = generate_timestamp(self.video_list[self.index]['time'])
-
-
-def generate_timestamp(time):
-    time_object = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
-    timestamp = int(time_object.timestamp())
-    return timestamp
+        self.video_list[self.index]['timestamp'] = timestamp.generate_timestamp(self.video_list[self.index]['time'])
