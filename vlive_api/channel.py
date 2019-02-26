@@ -1,6 +1,5 @@
 import requests
-from . import generate_timestamp
-
+from .timestamp import generate_timestamp
 
 class channel():
     VLIVE_URI = (
