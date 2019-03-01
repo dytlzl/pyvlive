@@ -1,4 +1,4 @@
 # vlive_api
-API of VLIVE(https://www.vlive.tv/)
+API of V LIVE(https://www.vlive.tv/)
 
 Made for myself
