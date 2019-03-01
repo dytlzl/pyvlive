@@ -1,7 +1,7 @@
 import requests
 from .timestamp import generate_timestamp
 
-class channel():
+class Channel():
     VLIVE_URI = (
         'https://api-vfan.vlive.tv/vproxy/channelplus/getChannelVideoList'
         '?app_id=%(app_id)s'

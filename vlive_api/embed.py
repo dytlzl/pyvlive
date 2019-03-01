@@ -1,4 +1,4 @@
-class embed():
+class Embed():
     EMBED_CODE = '<iframe src=https://www.vlive.tv/embed/%s?autoPlay=false" frameborder="no" scrolling="no" marginwidth="0" marginheight="0" WIDTH="544" HEIGHT="306" allowfullscreen></iframe>'
 
 

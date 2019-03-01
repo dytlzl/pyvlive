@@ -1,2 +1,2 @@
-from .channel import channel
-from .embed import embed
+from .channel import Channel
+from .embed import Embed
