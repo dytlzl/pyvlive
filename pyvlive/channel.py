@@ -1,7 +1,8 @@
 import requests
 from .timestamp import generate_timestamp
 
-class Channel():
+
+class Channel:
     VLIVE_URI = (
         'https://api-vfan.vlive.tv/vproxy/channelplus/getChannelVideoList'
         '?app_id=%(app_id)s'
@@ -11,7 +12,6 @@ class Channel():
     )
     VFAN_APP_ID = '8c6cc7b45d2568fb668be6e05b6e5a3b'
     MAX_NUM_LIST = 100
-
 
     def __init__(self, channel_seq, limit=1024, allow_other_channel=True, allow_mini_replay=True, search_word=''):
         self.channel_seq = channel_seq
@@ -24,10 +24,8 @@ class Channel():
         self.page = 1
         self.index = 0
 
-
     def __iter__(self):
         return self
-
 
     def __next__(self):
         while True:
@@ -40,7 +38,6 @@ class Channel():
         self.index += 1
         return content
 
-
     def fetch_video_list(self):
         uri = self.VLIVE_URI % {
             'app_id': self.VFAN_APP_ID,
@@ -51,7 +48,6 @@ class Channel():
         res = requests.get(uri)
         data = res.json()
         return data
-
 
     def configure_video_list(self):
         data = self.fetch_video_list()['result']
@@ -70,19 +66,17 @@ class Channel():
         self.page += 1
         return True
 
-
     def filter_video_data(self):
         try:
-            if (self.search_word == '' or self.search_word in self.video_list[self.index]['title']
-            ) and (self.allow_mini_replay or not '[CH+ mini replay]' in self.video_list[self.index]['title']
-            ) and (self.allow_other_channel or self.channel_name == self.video_list[self.index]['channel_name']):
+            if (self.search_word == '' or self.search_word in self.video_list[self.index]['title']) \
+                    and (self.allow_mini_replay or '[CH+ mini replay]' not in self.video_list[self.index]['title']) \
+                    and (self.allow_other_channel or self.channel_name == self.video_list[self.index]['channel_name']):
                 return True
         except IndexError:
             return False
         self.index += 1
         self.limit += 1
         self.filter_video_data()
-
 
     def can_stop_iteration(self):
         if self.has_reached_limit():
@@ -92,13 +86,11 @@ class Channel():
         else:
             return not self.configure_video_list()
 
-
     def has_reached_limit(self):
         if not self.index < self.limit:
             return True
         else:
             return False
-
 
     def configure_timestamp(self):
         self.video_list[self.index]['timestamp'] = generate_timestamp(self.video_list[self.index]['time'])
