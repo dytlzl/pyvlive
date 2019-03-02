@@ -1,4 +1,4 @@
-# vlive_api
-API of V LIVE(https://www.vlive.tv/)
+# pyvlive
+API of V LIVE(https://www.vlive.tv/) for Python
 
-Made for myself
+FOR MY OWN USE
