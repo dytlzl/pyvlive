@@ -11,8 +11,8 @@ class Channel:
         self.channel_name = ''
         self.videos = []
         self.limit = limit
-        self.allow_other_channel = allow_other_channel
-        self.allow_mini_replay = allow_mini_replay
+        self.is_allowed_other_channel = allow_other_channel
+        self.is_allowed_mini_replay = allow_mini_replay
         self.search_word = search_word
         self.index = 0
         self.params = {
@@ -29,38 +29,40 @@ class Channel:
     def __next__(self):
         if self.index >= self.limit or (self.index >= len(self.videos) and not self.register_video_data()):
             raise StopIteration
-        if self.filter_video_data():
+        try:
             self.videos[self.index].generate_timestamp()
             video = self.videos[self.index]
             self.index += 1
             return video
-        else:
+        except IndexError:
             return self.__next__()
 
-    def fetch_videos(self):
+    def fetch_video_list(self):
         res = requests.get(self.VLIVE_URI, params=self.params)
         data = res.json()
         return data
 
     def register_video_data(self):
-        data = self.fetch_videos()['result']
+        data = self.fetch_video_list()['result']
         self.channel_name = data['channelInfo']['channelName']
         try:
-            for i in data['videoList']:
-                self.videos.append(Video(i['videoSeq'], i['title'], i['representChannelName'], i['onAirStartAt']))
+            for video_data in data['videoList']:
+                if video_data['videoType'] != 'VOD'\
+                        or (self.search_word != '' and self.search_word not in video_data['title'])\
+                        or (not self.is_allowed_mini_replay and '[CH+ mini replay]' in video_data['title'])\
+                        or (not self.is_allowed_other_channel and self.channel_name != video_data['representChannelName']):
+                    continue
+                self.videos.append(
+                    Video(
+                        video_data['videoSeq'],
+                        video_data['title'],
+                        video_data['representChannelName'],
+                        video_data['onAirStartAt'],
+                        video_data['playTime'],
+                        video_data['thumbnail']
+                    )
+                )
         except KeyError:
             return False
         self.params['pageNo'] += 1
         return True
-
-    def filter_video_data(self):
-        try:
-            if (self.search_word == '' or self.search_word in self.videos[self.index].title) \
-                    and (self.allow_mini_replay or '[CH+ mini replay]' not in self.videos[self.index].title) \
-                    and (self.allow_other_channel or self.channel_name == self.videos[self.index].channel_name):
-                return True
-        except IndexError:
-            return False
-        self.index += 1
-        self.limit += 1
-        self.filter_video_data()

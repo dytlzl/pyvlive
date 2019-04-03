@@ -6,21 +6,23 @@ class Video:
                  'frameborder="no" scrolling="no" marginwidth="0" marginheight="0" ' \
                  'WIDTH="544" HEIGHT="306" allowfullscreen></iframe>'
 
-    def __init__(self, video_seq, title, channel_name, date_time):
+    def __init__(self, video_seq, title, channel_name, date_time, play_time, thumbnail):
         self.video_seq = video_seq
         self.title = title
         self.channel_name = channel_name
         self.datetime = date_time
+        self.play_time = play_time
+        self.thumbnail = thumbnail
         self.timestamp = None
 
     def __str__(self):
-        string = 'Title: %s(%s)\nChannel: %s\nTime: %s(%s)\n' \
+        string = 'Sequence: %s\nTitle: %s\nChannel: %s\nTime: %s\nDuration: %s\n' \
                  % (
-                     self.title,
                      self.video_seq,
+                     self.title,
                      self.channel_name,
                      self.datetime,
-                     self.timestamp
+                     datetime.timedelta(seconds=self.play_time),
                  )
         return string
 
