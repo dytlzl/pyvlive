@@ -23,25 +23,26 @@ class Channel:
         }
 
     def __iter__(self):
+        self.register_video_data()
         return self
 
     def __next__(self):
-        while True:
-            if self.can_stop_iteration():
-                raise StopIteration
-            if self.filter_video_data():
-                break
-        self.videos[self.index].generate_timestamp()
-        content = self.videos[self.index]
-        self.index += 1
-        return content
+        if self.index >= self.limit or (self.index >= len(self.videos) and not self.register_video_data()):
+            raise StopIteration
+        if self.filter_video_data():
+            self.videos[self.index].generate_timestamp()
+            video = self.videos[self.index]
+            self.index += 1
+            return video
+        else:
+            return self.__next__()
 
     def fetch_videos(self):
         res = requests.get(self.VLIVE_URI, params=self.params)
         data = res.json()
         return data
 
-    def configure_videos(self):
+    def register_video_data(self):
         data = self.fetch_videos()['result']
         self.channel_name = data['channelInfo']['channelName']
         try:
@@ -63,17 +64,3 @@ class Channel:
         self.index += 1
         self.limit += 1
         self.filter_video_data()
-
-    def can_stop_iteration(self):
-        if self.has_reached_limit():
-            return True
-        if self.index < len(self.videos):
-            return False
-        else:
-            return not self.configure_videos()
-
-    def has_reached_limit(self):
-        if not self.index < self.limit:
-            return True
-        else:
-            return False
